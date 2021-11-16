@@ -1,5 +1,13 @@
 const projectsData = [
   {
+    title: 'Coffee Connoisseur',
+    imgSrc: '/static/images/coffee-connoisseur.jpeg',
+    description:
+      'Next.js & Airtableで構築したコーヒー店検索アプリ。位置情報を元にFoursquareAPIで現在地近くのコーヒー店を検索できます',
+    githubLink: 'https://github.com/KYOYA-OGA/next-coffee-connoisseur',
+    href: 'https://coffee-stores-discover.netlify.app/',
+  },
+  {
     title: 'YouTube Clone',
     description: `React + Redux + firebase + YouTube DATA API で構築した YouTube クローン`,
     imgSrc: '/static/images/youtube-clone.jpg',
@@ -76,14 +84,6 @@ const projectsData = [
     description: 'Next.js製ギャラリーサイト',
     githubLink: 'https://github.com/KYOYA-OGA/hokusai',
     href: 'https://hokusai.vercel.app',
-  },
-  {
-    title: 'Coffee Connoisseur',
-    imgSrc: '/static/images/coffee-connoisseur.jpeg',
-    description:
-      'Next.js & Airtableで構築したコーヒー店検索アプリ。位置情報を元にFoursquareAPIで現在地近くのコーヒー店を検索できます',
-    githubLink: 'https://github.com/KYOYA-OGA/next-coffee-connoisseur',
-    href: 'https://coffee-stores-discover.netlify.app/',
   },
 ]
 
