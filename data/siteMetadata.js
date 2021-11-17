@@ -18,7 +18,7 @@ const siteMetadata = {
   locale: 'ja',
   analytics: {
     // supports plausible, simpleAnalytics or googleAnalytics
-    plausibleDataDomain: 'www.kyoya.dev/', // e.g. tailwind-nextjs-starter-blog.vercel.app
+    plausibleDataDomain: 'www.kyoya.dev', // e.g. tailwind-nextjs-starter-blog.vercel.app
     simpleAnalytics: false, // true or false
     googleAnalyticsId: process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID, // e.g. UA-000000-2 or G-XXXXXXX
   },
