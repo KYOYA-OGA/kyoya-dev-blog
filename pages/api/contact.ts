@@ -1,10 +1,31 @@
 import mail from '@sendgrid/mail'
 import type { NextApiRequest, NextApiResponse } from 'next'
+import Cors from 'cors'
+
+// Initializing the cors middleware
+const cors = Cors({
+  methods: ['POST'],
+})
+
+function runMiddleware(req, res, fn) {
+  return new Promise((resolve, reject) => {
+    fn(req, res, (result) => {
+      if (result instanceof Error) {
+        return reject(result)
+      }
+
+      return resolve(result)
+    })
+  })
+}
 
 mail.setApiKey(process.env.SENDGRID_API_KEY)
 
 // eslint-disable-next-line import/no-anonymous-default-export
 export default async (req: NextApiRequest, res: NextApiResponse) => {
+  // Run the middleware
+  await runMiddleware(req, res, cors)
+
   const { yourName, yourEmail, yourSubject, yourMessage, reCaptchaToken } = req.body
 
   if (!yourName) {
