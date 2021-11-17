@@ -62,7 +62,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     メッセージ: ${yourMessage}
   `
 
-    mail.send({
+    await mail.send({
       to: process.env.EMAIL_TO,
       from: yourEmail,
       subject: `サイトからお問い合わせがありました。件名: ${yourSubject}`,
