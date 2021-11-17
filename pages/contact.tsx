@@ -1,7 +1,6 @@
 import { PageSEO } from '@/components/SEO'
 import siteMetadata from '@/data/siteMetadata'
 import { useForm } from 'react-hook-form'
-// import axios, { AxiosRequestConfig } from 'axios'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3'
@@ -24,14 +23,6 @@ export default function Contact() {
 
   const onSubmitForm = async (values) => {
     const reCaptchaToken = await executeRecaptcha('contactPage')
-    // const config: AxiosRequestConfig = {
-    //   method: 'POST',
-    //   url: `${process.env.NEXT_PUBLIC_API_URL}/api/contact`,
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   data: { ...values, reCaptchaToken },
-    // }
     const data = { ...values, reCaptchaToken }
     try {
       const response = await fetch('/api/contact', {
