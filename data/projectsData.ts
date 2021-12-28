@@ -8,6 +8,13 @@ const projectsData = [
     href: 'https://coffee-stores-discover.netlify.app/',
   },
   {
+    title: 'Github Finder',
+    imgSrc: '/static/images/github-finder-app.jpeg',
+    description: 'React & TailwindCSSで構築したGithubユーザー情報検索アプリ',
+    githubLink: 'https://github.com/KYOYA-OGA/github-finder',
+    href: 'https://github-finder-ivory.vercel.app',
+  },
+  {
     title: 'YouTube Clone',
     description: `React + Redux + firebase + YouTube DATA API で構築した YouTube クローン`,
     imgSrc: '/static/images/youtube-clone.jpg',
