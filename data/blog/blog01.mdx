@@ -1,0 +1,200 @@
+---
+title: 'Next.js + Headless WordPressでjamstackなサイトをつくる'
+date: '2022-01-08'
+lastmod: '2022-01-08'
+tags: ['Next.js', 'React', 'TailwindCSS', 'WordPress', 'Headless WordPress', 'jamstack']
+draft: false
+summary: 'Next.jsをWordPressと連携させて静的サイトをつくっていく試み第一弾です。'
+layout: PostSimple
+---
+
+今回は Headless CMS として WordPress を用いる方法を解説します。
+
+通常、WordPress は画面表示まで担当するフルスタックなシステムですが、
+純粋にバックエンドとしてのみ働いてもらうことも可能です。
+
+何故そんなことをするのかというと、
+端的に React 等モダンなフロントエンド技術を用いた方が表示のパフォーマンスが良いからです。WordPress で構築されたサイトのモタモタさにイラつくのはもはや現代病です。
+
+そしてなんといっても開発がしやすい ← これ大事！
+
+---
+
+# 手順
+
+1. WordPress に WPGraphQL をインストール
+2. Next.js と WordPress を連携してデータを取得
+3. Next.js 上ですべての投稿データを表示させる
+4. 詳細（個別）ページを作成（次回以降…）
+5. ブログのカテゴリーを作成（次回以降…）
+
+# 使用する技術
+
+- Next.js
+- TailwindCSS
+- WPGraphQL
+- GraphQL
+- WordPress（ローカル環境として LOCAL を使用）
+
+---
+
+## WordPress に WPGraphQL をインストール
+
+### WordPress にデータを入稿
+
+余談とはなりますが、私は昨今の WordPress のブロックエディターへの移行には面白みを感じていない派です。欲しいのはデザインのツールではなくて、データの入稿ツールなんですよね…。クラシックエディターあるいはカスタムフィールドはデータ入稿ツールとしてかなりの優れものだと思うのですが。
+
+ちなみに、公式の声明によると以下の通り。
+
+> Classic Editor は公式な WordPress プラグインであり、少なくとも 2022 年まで、または必要なくなるまでの間、完全にサポート・保守されます。
+
+引用元：[Classic Editor](https://ja.wordpress.org/plugins/classic-editor/)
+
+元々 2021 年末でサポートを切るという話だったはずなので、本当に使えなくなる日は相当先なのではないかと思ったりします。Headless 需要に応えて、クラシックエディターが残っていくとありがたいですね。
+
+閑話休題。
+
+### WPGraphQL プラグインをインストール
+
+まず WordPress に WPGraphQL プラグイン をインストールします。
+
+![WPGraphQLプラグインを検索](/blog/blog01/wpgraphql_img.jpeg)
+
+WordPress はデフォルトで RESTAPI を提供していますが、取得するデータをコントロールできたほうが効率が良いため、GraphQL を用います。このあたりは好みが分かれるかもしれませんね。
+
+ちなみに、このプラグインの作者である Jason Bahl さんは発信活動も熱心で、jamstack 関連の動画でよくお目にかかります。開発者として憧れますね。
+
+### 取得するデータを実際にクエリしてみる
+
+プラグインに内蔵されている GUI で取得するデータを確認できます。
+
+今回は、投稿の id とタイトル、スラッグおよびコンテンツを取得しています。
+
+![WPGraphiQLですべての投稿をクエリ](/blog/blog01/wpgraphql_query.jpeg)
+
+GraphQL はこの直感性が最高ですね 😇
+
+クエリ項目は昔と比べてかなりすっきりしているのですが、それでも若干慣れが必要かもしれません。
+今回はすべての投稿を取得しようとしているため、posts をクエリしています。
+
+---
+
+## Next.js と WordPress を接続してデータを取得する
+
+### Next.js のセットアップ
+
+スタイルには TailwindCSS を使用します。
+一旦、TailwindCSS に慣れてしまうと従来のクラス記法が面倒で仕方がなくなります…。
+CSS ってデフォルトで Tailwind で良くないですか？（過激派）
+
+[tailwindcss 公式ドキュメント](https://tailwindcss.com/docs/guides/nextjs)
+
+コマンド一発でセットアップが完了するスターターキットはありますが、
+デフォルトで TypeScript に設定されてしまうので、手動でセットアップします。
+
+※ TypeScript がもはや必須なのは承知しているのですが、WPGraphQL での型の取得に手こずりまして、というか挫折しまして、一旦素の JavaScript で書きます 🥴
+
+適当に仕上げていったんこんな感じになりました。
+
+```js:pages/index.js
+export default function Home() {
+  return (
+    <main className="flex items-center justify-center h-screen">
+      <h1 className="text-3xl font-bold underline">Next.js with Headless WordPress</h1>
+    </main>
+  );
+}
+
+```
+
+![初期設定トップページ](/blog/blog01/home01.jpeg)
+
+### Apollo Client を追加
+
+GraphQL でのデータ取得には Apollo Client を使用します。
+
+```
+npm install @apollo/client graphql
+```
+
+[Apollo ドキュメント](https://www.apollographql.com/docs/react/get-started)
+
+静的なサイトを作成したいため、 getStaticProps を使用します。
+※今回は便宜上ファイルを分割しませんのでご勘弁を。
+
+uri には WordPress サイトの URL を指定します。
+
+なお、自分は LOCAL(By Flywheel)で構築したサイトにつなげています。
+
+```js:index.js
+
+export const getStaticProps = async () => {
+  const client = new ApolloClient({
+    uri: 'http://wptest.local/graphql',
+    cache: new InMemoryCache(),
+  });
+
+  const response = await client.query({
+    query: gql`
+      query MyQuery {
+        posts {
+          edges {
+            node {
+              id
+              title
+              content
+              slug
+            }
+          }
+        }
+      }
+    `,
+  });
+
+  const posts = response.data.posts.edges;
+
+  return {
+    props: {
+      posts,
+    },
+  };
+};
+
+```
+
+getStaticProps で取得した値をページの props に渡します。
+
+```js:index.js
+
+export default function Home({ posts }) {
+
+  return (
+    <main className="flex items-center justify-center h-screen">
+      <div>
+        <h1 className="text-3xl font-bold underline">
+          Next.js with Headless WordPress
+        </h1>
+        <div className="mt-5 space-y-2">
+          {posts.map((post) => {
+            const { id, title } = post.node;
+            return <h2 key={id}>{title}</h2>;
+          })}
+        </div>
+      </div>
+    </main>
+  );
+}
+
+```
+
+無事 WordPress の投稿データを取得できました。
+
+![初期設定トップページ](/blog/blog01/home02.jpeg)
+
+これでやっとスタート地点に立てました！
+
+WordPress での~~似非~~開発に慣れていると、何故こんな面倒なことをしなければならないのかという複雑な気持ちになりますが、前進に必要な痛みですね 😇
+
+今回のレポは[こちら](https://github.com/KYOYA-OGA/next-with-wp-practice)。
+
+次回以降、個別ページやカテゴリーの作成、プレビューモードの実装などを行う予定です。
