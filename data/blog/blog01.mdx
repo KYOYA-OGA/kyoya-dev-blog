@@ -1,7 +1,7 @@
 ---
 title: 'Next.js + Headless WordPressでJamstackなサイトをつくる'
 date: '2022-01-08'
-lastmod: '2022-01-08'
+lastmod: '2022-04-19'
 tags: ['Next.js', 'React', 'TailwindCSS', 'WordPress', 'Headless WordPress', 'Jamstack']
 draft: false
 summary: 'Next.jsをWordPressと連携させて静的サイトをつくっていく試み第一弾です。'
@@ -13,10 +13,10 @@ layout: PostSimple
 通常、WordPress は画面表示まで担当するフルスタックなシステムですが、
 純粋にバックエンドとしてのみ働いてもらうことも可能です。
 
-何故そんなことをするのかというと、
-端的に React 等モダンなフロントエンド技術を用いた方が表示のパフォーマンスが良いからです。WordPress で構築されたサイトのモタモタさにイラつくのはもはや現代病です。
+理由は様々ありますが、
+端的にいって React 等モダンなフロントエンド技術を用いた方が表示のパフォーマンスが良いです。特にメンテナンスされていない WordPress 製のサイトは、開いた瞬間に「嗚呼、WordPress なんだろうな…」とわかることがしばしばです。
 
-そしてなんといっても開発がしやすい ← これ大事！
+そしてなんといっても開発が楽しい、これに尽きます 😎
 
 ---
 
@@ -89,11 +89,6 @@ CSS ってデフォルトで Tailwind で良くないですか？（過激派）
 
 [tailwindcss 公式ドキュメント](https://tailwindcss.com/docs/guides/nextjs)
 
-コマンド一発でセットアップが完了するスターターキットはありますが、
-デフォルトで TypeScript に設定されてしまうので、手動でセットアップします。
-
-※ TypeScript がもはや必須なのは承知しているのですが、WPGraphQL での型の取得に手こずりまして、というか挫折しまして、一旦素の JavaScript で書きます 🥴
-
 適当に仕上げていったんこんな感じになりました。
 
 ```js:pages/index.js
@@ -119,39 +114,80 @@ npm install @apollo/client graphql
 
 [Apollo ドキュメント](https://www.apollographql.com/docs/react/get-started)
 
-静的なサイトを作成したいため、 getStaticProps を使用します。
-※今回は便宜上ファイルを分割しませんのでご勘弁を。
+どのファイルからも参照しやすいよう lib フォルダを作成し以下のファイルを置きます。
 
-uri には WordPress サイトの URL を指定します。
+```js:lib/apollo.js
 
-なお、自分は LOCAL(By Flywheel)で構築したサイトにつなげています。
+import { ApolloClient, InMemoryCache } from '@apollo/client';
 
-```js:index.js
+export const client = new ApolloClient({
+  uri: `${process.env.NEXT_PUBLIC_WORDPRESS_URL}/graphql`,
+  cache: new InMemoryCache(),
+});
+
+```
+
+なお、WordPress については LOCAL(By Flywheel)で構築しているため URL を隠しても仕方ないのですが、念のため。
+
+ルートに env.local ファイルを作成し保管。
+
+```.env.local
+
+NEXT_PUBLIC_WORDPRESS_URL='あなたのWordPressサイトのURL'
+
+```
+
+今回は Next.js の getStaticProps を使用するため、必須ではないのですが、
+ApolloPrivider でアプリ全体を囲っておきます。
+（useQuery 等、Apollo が提供している React フックを使用できるようになります。）
+
+```js:pages/_app.js
+
+import { ApolloProvider } from '@apollo/client';
+import { client } from '../lib/apollo';
+import '../styles/globals.css';
+
+function MyApp({ Component, pageProps }) {
+  return (
+    <ApolloProvider client={client}>
+      <Component {...pageProps} />
+    </ApolloProvider>
+  );
+}
+
+export default MyApp;
+
+```
+
+### getStaticProps でデータを取得
+
+静的なサイトを作成したいため、 みんな大好き getStaticProps を使用します。
+
+特に複雑なことはせず、apollo 先生のルールにしたがって graphql をクエリするのみです。
+
+```js:pages/index.js
+
+import { gql } from '@apollo/client';
+import { client } from '../lib/apollo';
 
 export const getStaticProps = async () => {
-  const client = new ApolloClient({
-    uri: 'http://wptest.local/graphql',
-    cache: new InMemoryCache(),
-  });
-
-  const response = await client.query({
-    query: gql`
-      query MyQuery {
-        posts {
-          edges {
-            node {
-              id
-              title
-              content
-              slug
-            }
-          }
+  const GET_POSTS = gql`
+    query AllPostsQuery {
+      posts {
+        nodes {
+          id
+          slug
+          title
         }
       }
-    `,
+    }
+  `;
+
+  const response = await client.query({
+    query: GET_POSTS,
   });
 
-  const posts = response.data.posts.edges;
+  const posts = response?.data?.posts?.nodes;
 
   return {
     props: {
@@ -162,12 +198,16 @@ export const getStaticProps = async () => {
 
 ```
 
-getStaticProps で取得した値をページの props に渡します。
+これで WordPress からのデータを取得できたので、
+この値をページの props に渡します。
 
-```js:index.js
+```js:pages/index.js
+
+import Link from 'next/link';
+
+...略
 
 export default function Home({ posts }) {
-
   return (
     <main className="flex items-center justify-center h-screen">
       <div>
@@ -176,8 +216,12 @@ export default function Home({ posts }) {
         </h1>
         <div className="mt-5 space-y-2">
           {posts.map((post) => {
-            const { id, title } = post.node;
-            return <h2 key={id}>{title}</h2>;
+            const { id, slug, title } = post;
+            return (
+              <Link key={id} href={`/posts/${slug}`}>
+                <a className="block">{title}</a>
+              </Link>
+            );
           })}
         </div>
       </div>
@@ -193,8 +237,10 @@ export default function Home({ posts }) {
 
 これでやっとスタート地点に立てました！
 
-WordPress での~~似非~~開発に慣れていると、何故こんな面倒なことをしなければならないのかという複雑な気持ちになりますが、前進に必要な痛みですね 😇
+WordPress のみで開発するなら投稿をループするだけなので、異様に複雑性を増しているだけといえばそうなのですが、Jamstack での開発は一回慣れてしまうと元に戻れない中毒性がありますね。
 
-今回のレポは[こちら](https://github.com/KYOYA-OGA/next-with-wp-practice)。
+技術の進化とはそういうものです 😇
+
+Github レポジトリは[こちら](https://github.com/KYOYA-OGA/next-with-wp-practice)。
 
 次回以降、個別ページやカテゴリーの作成、プレビューモードの実装などを行う予定です。
