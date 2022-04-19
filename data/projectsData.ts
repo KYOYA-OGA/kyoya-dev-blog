@@ -27,7 +27,6 @@ const projectsData = [
     description:
       'フロントエンドをReact、バックエンドをFirebaseで構築したサーバーレスなショッピングサイト',
     githubLink: 'https://github.com/KYOYA-OGA/react-awesome-store-JP',
-    href: 'https://awesome-shop-ja.web.app/',
   },
   {
     imgSrc: '/static/images/comfy-store.png',
