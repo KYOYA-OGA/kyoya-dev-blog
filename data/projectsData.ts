@@ -1,5 +1,13 @@
 const projectsData = [
   {
+    title: 'Netflix Clone',
+    imgSrc: '/static/images/netflix-clone.jpg',
+    description:
+      'Next.js & TypeScript & tailwindcss & firebase & stripeで構築したお馴染みのNetflixクローン。firebaseによるユーザー認証とstripeによる決済システムを盛り込んでいます。',
+    githubLink: 'https://github.com/KYOYA-OGA/netflix-clone',
+    href: 'https://netflix-clone-ochre-five.vercel.app/',
+  },
+  {
     title: 'Coffee Connoisseur',
     imgSrc: '/static/images/coffee-connoisseur.jpeg',
     description:
@@ -10,7 +18,7 @@ const projectsData = [
   {
     title: 'Github Finder',
     imgSrc: '/static/images/github-finder-app.jpeg',
-    description: 'React & TailwindCSSで構築したGithubユーザー情報検索アプリ',
+    description: 'React & tailwindcssで構築したGithubユーザー情報検索アプリ',
     githubLink: 'https://github.com/KYOYA-OGA/github-finder',
     href: 'https://github-finder-ivory.vercel.app',
   },
@@ -52,7 +60,7 @@ const projectsData = [
   {
     title: 'Airbnb Clone',
     imgSrc: '/static/images/airbnb-clone.png',
-    description: 'Next.js & tailwindCSS 製Airbnbクローン',
+    description: 'Next.js & tailwindcss 製Airbnbクローン',
     githubLink: 'https://github.com/KYOYA-OGA/airbnb-clone',
     href: 'https://airbnb-clone-opal-one.vercel.app',
   },

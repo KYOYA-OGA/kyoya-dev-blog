@@ -13,7 +13,7 @@ export default function Projects() {
             My Projects
           </h1>
           <p className="md:text-lg leading-7 text-gray-700 dark:text-gray-300">
-            技術力向上のために作ったWebサイトやアプリです。コードも公開していますので参考になれば幸いです。
+            ものづくりを楽しむのと同時にエンジニアとしての引き出しを増やすために制作してきたWebアプリ一覧です。コードも公開していますのでなにかの参考になれば幸いです。
             <br />
             一部ログインが必要なサイトがありますので、ダミーアカウントでお試しください。
           </p>
