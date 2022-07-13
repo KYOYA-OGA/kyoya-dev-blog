@@ -1,11 +1,27 @@
 const projectsData = [
   {
+    title: 'Movie Review App',
+    imgSrc: '/static/images/movie-review-app.jpg',
+    description:
+      'MERNスタックにて構築した映画・ドラマレビューアプリ。基本的な認証に加えてOTP認証も実装。管理者権限でコンテンツの登録が可能で、通常ユーザーにはレビュー投稿機能を提供しています。',
+    githubLink: 'https://github.com/KYOYA-OGA/mern-review-app-frontend',
+    href: 'https://mern-review-app-frontend.pages.dev/',
+  },
+  {
     title: 'Netflix Clone',
     imgSrc: '/static/images/netflix-clone.jpg',
     description:
-      'Next.js & TypeScript & tailwindcss & firebase & stripeで構築したお馴染みのNetflixクローン。firebaseによるユーザー認証とstripeによる決済システムを盛り込んでいます。',
+      'Next.js & TypeScript & tailwindcss & firebase & stripeで構築したお馴染みのNetflixクローン。firebaseによるユーザー認証とstripeによる決済システムを盛り込んでいます。ダミーサイトのため警告がでますがご了承ください🤡',
     githubLink: 'https://github.com/KYOYA-OGA/netflix-clone',
     href: 'https://netflix-clone-ochre-five.vercel.app/',
+  },
+  {
+    title: 'Gatsby Tech Blog',
+    imgSrc: '/static/images/gatsby-dev-blog.jpg',
+    description:
+      'フレームワークとしてGatsbyを採用した静的ブログサイト。CMSにはsanityを採用。カテゴリーでの絞り込みやページネーション、検索機能等、ブログに必要な機能を網羅しています。',
+    githubLink: 'https://github.com/KYOYA-OGA/gatsby-tech-blog-tutorial',
+    href: 'https://gatsby-tech-blog-tutorial.pages.dev/',
   },
   {
     title: 'Coffee Connoisseur',
