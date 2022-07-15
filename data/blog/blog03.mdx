@@ -1,0 +1,198 @@
+---
+title: 'ずっと無料のままNode.jsをデプロイする🤤'
+date: '2022-07-14'
+lastmod: '2022-07-14'
+tags: ['Node.js', 'React', 'MERN', 'MongoDB', 'VPS']
+draft: false
+summary: 'Oracle Cloudの無料枠にNode.jsサーバーを立ち上げて無料で運用する技を紹介。'
+layout: PostSimple
+---
+
+Node.js が動く本番環境が欲しいけど費用が惜しい…
+
+Heroku のコールドスタートがいただけない…
+
+そんなケチで貧乏なあなたに朗報です。
+
+Oracle Cloud の寛大な無料枠で VPS を利用させてもらい、Node.js をデプロイする方法をご紹介します。しかも CloudPanel というコントロールパネルを使用するため設定も比較的かんたんです。
+
+※情報は 2022 年 7 月時点のものです。Oracle の情け深いサービスがいつまで続くかは誰にも分かりません…。
+
+<p className="text-red-500">
+  ※別途ドメインの取得は必要になります。なので実は完全に無料ではありません…。
+</p>
+
+<hr />
+
+# ざっくりとした手順
+
+1. Oracle Cloud のアカウント取得
+
+2. Ubuntu サーバーを起動
+
+3. SSH でサーバーに接続して、CloudPanel をインストール
+
+4. CloudPanel 上で Node.js をインストール
+
+5. ドメインを設定する
+
+6. Node.js プロジェクトを Github からクローン
+
+<hr />
+
+# 詳細
+
+## Oracle Cloud のアカウント取得
+
+### そもそも Oracle Cloud Free Tier とは？
+
+その名の通り Oracle Cloud の一部のサービスをずっと無料で利用できるというものです。AWS のように一年間無料というわけではなく、ずっとです。すごい。新規登録者向けの 30 日間 Free Trial もありますが、それとは別のサービスです。
+
+[こちら](https://www.oracle.com/jp/a/otn/docs/oracle-always-free-application-development.pdf)の中の方のスライドに詳しいです。
+
+まずは[公式サイト](https://www.oracle.com/cloud/)からサインアップします。
+
+運用自体は無料で可能ですがクレジットカードの登録が必要になります。公式によるとデビットカードも使えるとのことですが、自分の場合は弾かれました。あるあるですね。
+
+## Ubuntu サーバーを起動
+
+いくつかサーバーの種類を選べますが、今回は CloudPanel というサービスを利用する関係上、Ubuntu を選択します。
+
+![サーバーを選択する画面](/blog/blog03/oc01.jpg)
+
+プロセッサーには無料で使える Ampere を選択します。いったん CPU とメモリの構成は最小にしておきます。無料枠でどこまで使えるのかは要調査です…。
+
+![プロセッサーを選択する画面](/blog/blog03/oc02.jpg)
+
+あとで SSH で接続するために公開鍵を登録しておきます。Mac の場合は ssh-keygen で秘密鍵と公開鍵を生成しておきましょう。
+
+![公開鍵入力画面](/blog/blog03/oc03.jpg)
+
+## SSH でサーバーに接続して、CloudPanel をインストール
+
+無事サーバーが立ち上がったら SSH で接続しましょう。以下は Mac の場合です。
+
+```
+
+ssh -i 秘密鍵までのパス ubuntu@パブリックIPアドレス
+例) ssh -i ~/.ssh/id_highly_confidential_key  ubuntu@122.73.85.199
+
+```
+
+接続できたら一通りアップデートをかけて CloudPanel をインストールします。
+
+<hr />
+
+### CloudPanel ってなんだ？
+
+公式サイトは[こちら](https://www.cloudpanel.io/)。サーバーを操作するためのコントロールパネルを無償で提供してくれるサービスです。よく見かける cPanel とかと同じようなものかと。軽量で使用感もいい感じです。ファーストビューが [Vercel](https://vercel.com/) に似すぎているような気が…😂
+
+<hr />
+
+基本的には CloupPanel の[ドキュメント](https://www.cloudpanel.io/docs/v2/getting-started/other/)に沿うだけですが、一行でまとめて打つとエラーになるため、別々に実行します。
+
+```
+
+sudo apt update
+sudo apt -y upgrade
+sudo apt -y install curl wget
+
+```
+
+データベースが必要になりますが、ここでは MySQL を選択します。
+
+```
+
+curl -sSL https://installer.cloudpanel.io/ce/v2/install.sh | sudo bash
+
+```
+
+## CloudPanel 上で Node.js をインストール
+
+インストールが終わったら案内通り、ポート 8443 にアクセスします。
+
+「この接続ではプライバシーが保護されません」というオレオレ証明書に由来する警告が表示されますが、いったん無視して進めます。これは専用のドメインを取得しセットアップすることで解決します。
+
+![CloudPanelサインアップ画面](/blog/blog03/oc05.jpg)
+
+ユーザー名やメールアドレス、パスワードを入力してサインアップします。
+続いてサインイン画面が表示されるので作成したアカウントの認証情報を入力。
+ログインできたらおそろしくシンプルなホーム画面が表示されるので右上の ADD SITE をクリック。
+
+![Node.js選択画面](/blog/blog03/oc06.jpg)
+
+どの種類のサイトを作りたいかと聞かれるので Node.js を選択します。実は WordPress も選択できます。無料で WordPress サイトを運用したい場合に便利ですね。
+
+## ドメインを設定する
+
+ここで残念なお知らせですが、ドメインの取得と設定が必要になります。
+
+ここでは適当なドメインをムームードメインで取得して設定します。余談ですが、ムームードメインは圧倒的にダサいデザインだったり、ボタンのフォーカスが表示されなかったりと厳し目の UX ですよね…。設定画面はプロバイダーによってまちまちかと思いますが、やることは一緒です。
+
+![ムームードメインDNS設定画面](/blog/blog03/oc08.jpg)
+
+※IP アドレスは実際のものではありません。失敗したときのやつです 🤪
+
+cloud.~ といった URL で CloudPanel にアクセスできるように設定しておきます。これは CloudPanel の Admin Area から設定することで可能になります。
+
+<hr />
+
+話が行ったり来たりしてますが、Node.js インストール画面で取得したドメインを入力します。このドメインにリダイレクトされるよう設定されてしまうため、実在するドメインを入れましょう（当たり前）。
+
+ユーザー名とパスワードで SSH 接続が可能になりますが、のちほど公開鍵認証に切り替えることもできます。
+
+![Node.jsインストール画面](/blog/blog03/oc07.jpg)
+
+## Node.js プロジェクトを Github からクローン
+
+インストールが終わったら、SSH でログインします。
+
+```
+
+ssh -i ~/.ssh/秘密鍵までのパス  ユーザー名@パブリックIPアドレス
+
+```
+
+ちゃんと Node.js 等がインストールされているか確認してみます。ついで git も確認。こんな感じになるはずです。
+
+```
+
+your-account-name:~/htdocs/$ node -v
+v16.16.0
+your-account-name:~/htdocs/$ npm -v
+8.11.0
+your-account-name:~/htdocs/$ git --version
+git version 2.34.1
+
+```
+
+上記の設定通りであれば、htdocs の配下に、登録したドメイン名と同じ名前のフォルダがあるはずなので、そちらまで移動して Git から必要なレポジトリをクローンします。もし試すものがなければ、至極シンプルな Node.js アプリを作成してあるので[こちら](https://github.com/KYOYA-OGA/node-js-oracle-test)をお使いください。ポートが 8888 に固定してあるため、CloudPanel 上での設定をお忘れなく。
+
+```
+
+git clone https://github.com/KYOYA-OGA/node-js-oracle-test
+
+```
+
+.env ファイルが必要な場合は別途作成あるいは編集します。
+
+```
+
+nano .env
+
+```
+
+node コマンドでアプリを起動することもできますが、手動でオンオフするのはあまりにイケていないため、PM2 という本番用プロセスマネージャーを使用します。
+
+```
+
+npm install -g pm2
+※アドミン権限が必要な場合はsudoを文頭に付与
+pm2 start server.js or your entry file
+
+
+```
+
+取得したドメインの URL にアクセスして、ファイルが表示されれば成功です。
+
+DNS が浸透するまでやや時間がかかる場合もあります。DNS の確認は[こちらのサイト](https://dnschecker.org/)が便利です。

@@ -73,13 +73,13 @@ const projectsData = [
     githubLink: 'https://github.com/KYOYA-OGA/next-events',
     href: 'https://next-events-nine-xi.vercel.app',
   },
-  {
-    title: 'Airbnb Clone',
-    imgSrc: '/static/images/airbnb-clone.png',
-    description: 'Next.js & tailwindcss 製Airbnbクローン',
-    githubLink: 'https://github.com/KYOYA-OGA/airbnb-clone',
-    href: 'https://airbnb-clone-opal-one.vercel.app',
-  },
+  // {
+  //   title: 'Airbnb Clone',
+  //   imgSrc: '/static/images/airbnb-clone.png',
+  //   description: 'Next.js & tailwindcss 製Airbnbクローン',
+  //   githubLink: 'https://github.com/KYOYA-OGA/airbnb-clone',
+  //   href: 'https://airbnb-clone-opal-one.vercel.app',
+  // },
   {
     title: 'Dev.to Clone',
     imgSrc: '/static/images/dev-to-clone.png',
